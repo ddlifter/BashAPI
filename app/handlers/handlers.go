@@ -2,12 +2,37 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 
 	database "github.com/ddlifter/BashAPI/db"
 	"github.com/gorilla/mux"
 )
+
+func RunCommand(w http.ResponseWriter, r *http.Request) {
+	db := database.Database()
+	defer db.Close()
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var command string
+	err := db.QueryRow("SELECT Script FROM Commands WHERE id = $1", id).Scan(&command)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	cmd := exec.Command("sh", "-c", command)
+
+	output, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Fprintf(w, "Command output: %s", output)
+}
 
 func GetCommands(w http.ResponseWriter, r *http.Request) {
 	db := database.Database()
