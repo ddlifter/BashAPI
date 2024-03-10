@@ -52,6 +52,37 @@ func RunCommand(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func StopCommand(w http.ResponseWriter, r *http.Request) {
+	db := database.Database()
+	defer db.Close()
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var status string
+	err := db.QueryRow("SELECT Status FROM Commands WHERE id = $1", id).Scan(&status)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if status != "running" {
+		w.WriteHeader(http.StatusPreconditionFailed)
+		fmt.Fprintf(w, "Command with ID %s is not running, cannot be stopped", id)
+		return
+	}
+
+	_, err = db.Exec("UPDATE Commands SET Status = $1 WHERE id = $2", "stopped", id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error while stopping command with ID %s", id)
+		log.Fatal(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Command with ID %s has been successfully stopped", id)
+}
+
 func GetCommands(w http.ResponseWriter, r *http.Request) {
 	db := database.Database()
 	defer db.Close()

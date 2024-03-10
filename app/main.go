@@ -19,6 +19,7 @@ func main() {
 	router.HandleFunc("/commands/{id}", handlers.DeleteCommand).Methods("DELETE")
 	router.HandleFunc("/commands", handlers.DeleteCommands).Methods("DELETE")
 	router.HandleFunc("/commands/run/{id}", handlers.RunCommand)
+	router.HandleFunc("/commands/stop/{id}", handlers.StopCommand)
 	router.Use(middleware.LoggingMiddleware)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
