@@ -24,6 +24,11 @@ func RunCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = db.Exec("UPDATE Commands SET Status = $1 WHERE id = $2", "running", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	resultChan := make(chan string)
 
 	go func() {
@@ -32,11 +37,19 @@ func RunCommand(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 		resultChan <- output
+
+		_, err = db.Exec("UPDATE Commands SET Status = $1 WHERE id = $2", output, id)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	output := <-resultChan
 
 	fmt.Fprintf(w, "Command output: %s", output)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetCommands(w http.ResponseWriter, r *http.Request) {
@@ -48,19 +61,21 @@ func GetCommands(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	expressions := map[int]database.Command{}
+	commands := map[int]database.Command{}
 	for rows.Next() {
 		var u database.Command
 		if err := rows.Scan(&u.ID, &u.Name, &u.Status, &u.Script); err != nil {
 			log.Fatal(err)
 		}
-		expressions[u.ID] = u
+		commands[u.ID] = u
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode(expressions)
+	json.NewEncoder(w).Encode(commands)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetCommand(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +130,8 @@ func DeleteCommand(w http.ResponseWriter, r *http.Request) {
 		}
 
 		json.NewEncoder(w).Encode("Command deleted")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -138,4 +155,6 @@ func DeleteCommands(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
