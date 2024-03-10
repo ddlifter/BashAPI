@@ -24,10 +24,17 @@ func RunCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := container.CreateAndRunDockerContainer(command)
-	if err != nil {
-		log.Fatal(err)
-	}
+	resultChan := make(chan string)
+
+	go func() {
+		output, err := container.CreateAndRunDockerContainer(command)
+		if err != nil {
+			log.Fatal(err)
+		}
+		resultChan <- output
+	}()
+
+	output := <-resultChan
 
 	fmt.Fprintf(w, "Command output: %s", output)
 }
