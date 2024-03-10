@@ -15,5 +15,8 @@ jobs:
       with:
         go-version: '1.21.6'
 
-    - name: Run tests
-      run: go test -v ./...
+    - name: Test handlers
+      run: cd app/handlers && go test -v
+
+    - name: Test database connection
+      run: cd db && go test -v
