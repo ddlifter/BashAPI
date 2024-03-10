@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
 
+	container "github.com/ddlifter/BashAPI/app/services"
 	database "github.com/ddlifter/BashAPI/db"
 	"github.com/gorilla/mux"
 )
@@ -24,9 +24,7 @@ func RunCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("sh", "-c", command)
-
-	output, err := cmd.Output()
+	output, err := container.CreateAndRunDockerContainer(command)
 	if err != nil {
 		log.Fatal(err)
 	}
