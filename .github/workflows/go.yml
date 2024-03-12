@@ -24,5 +24,5 @@ jobs:
     - name: Test database connection
       run: cd db && go test -v
 
-    # - name: Test container
-    #   run: cd app/services && go test -v
+    - name: Test container
+      run: cd app/services && go test -v
