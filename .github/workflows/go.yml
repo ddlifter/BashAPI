@@ -3,6 +3,14 @@ name: Go Tests
 on: [push, pull_request]
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Docker
+        uses: actions/setup-docker@v2
+        with:
+          docker-version: '1.43'
   test:
     runs-on: ubuntu-latest
 
