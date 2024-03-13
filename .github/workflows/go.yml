@@ -3,13 +3,10 @@ name: Go Tests
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -18,10 +15,7 @@ jobs:
 
     - name: Build and run container
       run:  docker run -d --name my-ubuntu-container ubuntu:latest
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
+      
     - name: Checkout code
       uses: actions/checkout@v2
 
