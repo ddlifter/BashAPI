@@ -11,7 +11,7 @@ import (
 )
 
 func CreateAndRunDockerContainer(command string) (string, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.NewClientWithOpts(client.WithVersion("1.43"))
 	if err != nil {
 		return "", err
 	}
